@@ -11,7 +11,7 @@ function page() {
   },[])
   return (
     <div className='flex flex-col gap-10 items-center justify-center w-full '>
-      <h1 className='font-extrabold text-4xl'>Demo Project</h1>
+      <h1 className='font-extrabold text-4xl'>MR Demo Project</h1>
       <button
         onClick={()=>setisHere(true)}
         className='bg-blue-100 px-6 py-3 rounded-2xl text-neutral-600 cursor-pointer'>

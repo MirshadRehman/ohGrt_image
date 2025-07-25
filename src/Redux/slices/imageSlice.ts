@@ -80,7 +80,7 @@ export const generateImages = createAsyncThunk<GeneratedImage[], GenerateImageRe
         },
         body: JSON.stringify(config),
       })
-
+     
       if (!response.ok) {
         const errorData = await response.text()
         throw new Error(`HTTP ${response.status}: ${errorData}`)

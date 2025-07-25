@@ -17,6 +17,8 @@ export function ImageResults() {
   const error = useSelector(selectError)
   const [copiedSeed, setCopiedSeed] = useState<string | null>(null)
 
+  console.log('image: ',images)
+
   const handleDownload = async (url: string, seed: string) => {
     try {
       const response = await fetch(url)
