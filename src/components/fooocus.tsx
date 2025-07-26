@@ -18,6 +18,7 @@ import { GenerationHistory } from "@/components/generation-history"
 import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "@/Redux/store"
 import { generateImages, selectIsLoading, setLastRequestConfig } from "@/Redux/slices/imageSlice"
+import { FaAngleUp, FaAngleDown } from "react-icons/fa";
 
 interface LoRAConfig {
   enabled: boolean
@@ -178,18 +179,18 @@ const styleOptions = [
 
 const performanceOptions = ["Speed", "Quality", "Extreme Speed"]
 const aspectRatioOptions = [
-    {
-    name: 'portrait',
-    value:"704*1408"
-    },
-   {
-    name:'Square',
-   value:"1024*1024"
-   },
   {
-    name:'Landscape',
-    value:"1408*704"
-    }
+    name: 'portrait',
+    value: "704*1408"
+  },
+  {
+    name: 'Square',
+    value: "1024*1024"
+  },
+  {
+    name: 'Landscape',
+    value: "1408*704"
+  }
 ]
 
 export default function FoocusConfigForm() {
@@ -236,6 +237,22 @@ export default function FoocusConfigForm() {
     newPrompts[index] = { ...newPrompts[index], [field]: value }
     setConfig((prev) => ({ ...prev, image_prompts: newPrompts }))
   }
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+
+    const files = e.target.files;
+    if (!files) return;
+
+    const file = files[0];
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const base64String = reader.result as string; // e.g., "data:image/png;base64,..."
+      updateImagePrompt(index, "cn_img", base64String);
+    };
+
+    reader.readAsDataURL(file); // Converts file to base64
+  };
+
 
   const addImagePrompt = () => {
     setConfig((prev) => ({
@@ -251,7 +268,7 @@ export default function FoocusConfigForm() {
     }))
   }
 
-  const dispatch:AppDispatch = useDispatch()
+  const dispatch: AppDispatch = useDispatch()
   const isLoading = useSelector(selectIsLoading)
 
   const handleSubmit = async () => {
@@ -261,6 +278,8 @@ export default function FoocusConfigForm() {
     // Dispatch the generate images action
     dispatch(generateImages(config))
   }
+
+  const [openInputimages, setopenInputimages] = useState(false)
 
   return (
     <div className="container mx-auto p-6 max-w-4xl text-neutral-700">
@@ -768,83 +787,90 @@ export default function FoocusConfigForm() {
 
         <TabsContent value="input" className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Input Images</CardTitle>
-              <CardDescription>Configure input images and masks</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="input_image">Input Image</Label>
-                <Input
-                  id="input_image"
-                  value={config.input_image}
-                  onChange={(e) => updateConfig("input_image", e.target.value)}
-                  placeholder="Base64 string or file path"
-                />
+            <div className="flex items-center justify-between">
+              <CardHeader>
+                <CardTitle>Input Images</CardTitle>
+                <CardDescription>Configure input images and masks</CardDescription>
+              </CardHeader>
+              <div onClick={() => setopenInputimages(!openInputimages)} className="mr-4">
+                {openInputimages ? <FaAngleUp size={25}/> : <FaAngleDown size={25}/>}
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="input_mask">Input Mask</Label>
-                <Input
-                  id="input_mask"
-                  value={config.input_mask}
-                  onChange={(e) => updateConfig("input_mask", e.target.value)}
-                  placeholder="Base64 string or file path"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="inpaint_prompt">Inpaint Additional Prompt</Label>
-                <Textarea
-                  id="inpaint_prompt"
-                  value={config.inpaint_additional_prompt}
-                  onChange={(e) => updateConfig("inpaint_additional_prompt", e.target.value)}
-                  placeholder="Additional prompt for inpainting"
-                />
-              </div>
-
-              <div className="grid grid-cols-4 gap-4">
+            </div>
+            {openInputimages === true && (
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="outpaint_left">Outpaint Left</Label>
+                  <Label htmlFor="input_image">Input Image</Label>
                   <Input
-                    id="outpaint_left"
-                    type="number"
-                    value={config.outpaint_distance_left}
-                    onChange={(e) => updateConfig("outpaint_distance_left", Number.parseInt(e.target.value))}
+                    id="input_image"
+                    value={config.input_image}
+                    onChange={(e) => updateConfig("input_image", e.target.value)}
+                    placeholder="Base64 string or file path"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="outpaint_right">Outpaint Right</Label>
+                  <Label htmlFor="input_mask">Input Mask</Label>
                   <Input
-                    id="outpaint_right"
-                    type="number"
-                    value={config.outpaint_distance_right}
-                    onChange={(e) => updateConfig("outpaint_distance_right", Number.parseInt(e.target.value))}
+                    id="input_mask"
+                    value={config.input_mask}
+                    onChange={(e) => updateConfig("input_mask", e.target.value)}
+                    placeholder="Base64 string or file path"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="outpaint_top">Outpaint Top</Label>
-                  <Input
-                    id="outpaint_top"
-                    type="number"
-                    value={config.outpaint_distance_top}
-                    onChange={(e) => updateConfig("outpaint_distance_top", Number.parseInt(e.target.value))}
+                  <Label htmlFor="inpaint_prompt">Inpaint Additional Prompt</Label>
+                  <Textarea
+                    id="inpaint_prompt"
+                    value={config.inpaint_additional_prompt}
+                    onChange={(e) => updateConfig("inpaint_additional_prompt", e.target.value)}
+                    placeholder="Additional prompt for inpainting"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="outpaint_bottom">Outpaint Bottom</Label>
-                  <Input
-                    id="outpaint_bottom"
-                    type="number"
-                    value={config.outpaint_distance_bottom}
-                    onChange={(e) => updateConfig("outpaint_distance_bottom", Number.parseInt(e.target.value))}
-                  />
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="outpaint_left">Outpaint Left</Label>
+                    <Input
+                      id="outpaint_left"
+                      type="number"
+                      value={config.outpaint_distance_left}
+                      onChange={(e) => updateConfig("outpaint_distance_left", Number.parseInt(e.target.value))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="outpaint_right">Outpaint Right</Label>
+                    <Input
+                      id="outpaint_right"
+                      type="number"
+                      value={config.outpaint_distance_right}
+                      onChange={(e) => updateConfig("outpaint_distance_right", Number.parseInt(e.target.value))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="outpaint_top">Outpaint Top</Label>
+                    <Input
+                      id="outpaint_top"
+                      type="number"
+                      value={config.outpaint_distance_top}
+                      onChange={(e) => updateConfig("outpaint_distance_top", Number.parseInt(e.target.value))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="outpaint_bottom">Outpaint Bottom</Label>
+                    <Input
+                      id="outpaint_bottom"
+                      type="number"
+                      value={config.outpaint_distance_bottom}
+                      onChange={(e) => updateConfig("outpaint_distance_bottom", Number.parseInt(e.target.value))}
+                    />
+                  </div>
                 </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            )}
           </Card>
 
           <Card>
@@ -867,11 +893,13 @@ export default function FoocusConfigForm() {
                   <div className="space-y-3">
                     <div className="space-y-2">
                       <Label>Image</Label>
-                      <Input
+                      {/* <Input
                         value={prompt.cn_img}
                         onChange={(e) => updateImagePrompt(index, "cn_img", e.target.value)}
                         placeholder="Base64 string or file path"
-                      />
+                      /> */}
+                      <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, index)} />
+
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
